@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Xploraa - Mappls Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+        html,
+        body,
+        #map {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .marker {
+            animation: pulse 2s infinite;
+        }
+    </style>
+    <script src="https://apis.mappls.com/advancedmaps/api/b8a5269c-04a7-42cf-8501-3b1371f1ed73/map_sdk?layer=vector&v=3.0&callback=initMap1" defer async></script>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <!-- Overlay Info -->
+    <div class="overlay">
+        <div class="title">🗺️ Xploraa Map</div>
+        <div class="subtitle">Explore Indore • Earn XP • Have Fun!</div>
+        <div style="font-size: 14px; color: #374151;">
+            📍 Interactive Mappls Map<br>
+            🎯 Zoom Level: <span id="zoom-level">18</span><br>
+            🔥 Status: <span id="status" style="color: #10b981;">Loading...</span>
+        </div>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn" onclick="zoomIn()">🔍 Zoom In</button>
+        <button class="btn" onclick="zoomOut()">🔍 Zoom Out</button>
+        <button class="btn" onclick="addMarkers()">📍 Add Places</button>
+        <button class="btn" onclick="getUserLocation()">📍 My Location</button>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats">
+        <div style="font-weight: bold; margin-bottom: 8px;">🎮 Game Stats</div>
+        <div style="font-size: 14px; color: #6b7280;">
+            XP: <span style="color: #3b82f6; font-weight: bold;">1250</span><br>
+            Places Visited: <span style="color: #10b981; font-weight: bold;">12</span><br>
+            Level: <span style="color: #f59e0b; font-weight: bold;">5</span>
+        </div>
+    </div>
+
+    <script>
+        var map;
+        var markers = [];
+        
+        // Your exact initialization function
+        function initMap1() {
+            console.log('🚀 Initializing Mappls Map...');
+            
+            map = new mappls.Map('map', {
+                center: [77.27604556863412, 28.638698386592438],
+                geolocation: true,
+                zoomControl: true,
+                zoom: 18
+            });
+            
+            // Set zoom as in your example
+            map.setZoom(18);
+            
+            // Update status
+            document.getElementById('status').textContent = 'Map Loaded!';
+            document.getElementById('status').style.color = '#10b981';
+            
+            // Add map event listeners
+            map.on('zoom', function() {
+                document.getElementById('zoom-level').textContent = map.getZoom();
+            });
+            
+            map.on('click', function(e) {
+                console.log('🖱️ Map clicked at:', e.lngLat);
+                addMarkerAt(e.lngLat.lng, e.lngLat.lat, 'Clicked Location', 'You found a secret spot! +50 XP');
+            });
+            
+            // Handle geolocation success
+            map.on('geolocate', function(e) {
+                console.log('📍 Current location found:', e.coords);
+                document.getElementById('status').textContent = 'Location Found!';
+                
+                // Add marker at current location
+                addMarkerAt(e.coords.longitude, e.coords.latitude, '📍 Your Current Location', 'This is where you are right now!', 'user');
+            });
+            
+            console.log('✅ Mappls Map initialized successfully!');
+            
+            // Auto detect user location after 1 second
+            setTimeout(() => {
+                console.log('🔍 Auto-detecting user location...');
+                getUserLocation();
+            }, 1000);
+            
+            // Auto add some sample markers after 3 seconds
+            setTimeout(addMarkers, 3000);
+        }
+        
+        // Control functions
+        function zoomIn() {
+            if (map) {
+                map.setZoom(map.getZoom() + 1);
+            }
+        }
+        
+        function zoomOut() {
+            if (map) {
+                map.setZoom(map.getZoom() - 1);
+            }
+        }
+        
+        function addMarkers() {
+            if (!map) return;
+            
+            console.log('📍 Adding place markers...');
+            
+            // Sample Delhi places with slight coordinate variations around the center
+            const places = [
+                { name: 'Red Fort', lat: 28.6562, lng: 77.2410, xp: 100, type: 'historic' },
+                { name: 'India Gate', lat: 28.6129, lng: 77.2295, xp: 150, type: 'historic' },
+                { name: 'Lotus Temple', lat: 28.5535, lng: 77.2588, xp: 80, type: 'temple' },
+                { name: 'Qutub Minar', lat: 28.5244, lng: 77.1855, xp: 120, type: 'historic' },
+                { name: 'Connaught Place', lat: 28.6315, lng: 77.2167, xp: 200, type: 'food' },
+                { name: 'Chandni Chowk', lat: 28.6506, lng: 77.2301, xp: 180, type: 'food' }
+            ];
+            
+            places.forEach((place, index) => {
+                setTimeout(() => {
+                    addMarkerAt(place.lng, place.lat, place.name, `Visit ${place.name} and earn ${place.xp} XP!`, place.type);
+                }, index * 500); // Staggered animation
+            });
+        }
+        
+        function addMarkerAt(lng, lat, title, description, type = 'default') {
+            if (!map) return;
+            
+            // Create marker with custom styling
+            const marker = new mappls.Marker({
+                map: map,
+                position: { lat: lat, lng: lng },
+                icon_url: getMarkerIcon(type),
+                width: 40,
+                height: 40,
+                fitbounds: false
+            });
+            
+            // Add info window
+            const infoWindow = new mappls.InfoWindow({
+                map: map,
+                position: { lat: lat, lng: lng },
+                content: `
+                    <div style="padding: 15px; min-width: 200px; text-align: center;">
+                        <h3 style="margin: 0 0 10px 0; color: #1f2937; font-weight: bold;">${title}</h3>
+                        <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">${description}</p>
+                        <button onclick="visitPlace('${title}')" style="
+                            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-weight: 500;
+                        ">🎯 Visit Place</button>
+                    </div>
+                `
+            });
+            
+            // Add click event to marker
+            marker.on('click', function() {
+                infoWindow.open();
+            });
+            
+            markers.push(marker);
+            console.log(`✅ Added marker for: ${title}`);
+        }
+        
+        function getMarkerIcon(type) {
+            const icons = {
+                historic: 'https://apis.mapmyindia.com/map_v3/1.3/png?marker=8b5cf6|15&=',
+                museum: 'https://apis.mapmyindia.com/map_v3/1.3/png?marker=3b82f6|15&=',
+                temple: 'https://apis.mapmyindia.com/map_v3/1.3/png?marker=f59e0b|15&=',
+                food: 'https://apis.mapmyindia.com/map_v3/1.3/png?marker=10b981|15&=',
+                default: 'https://apis.mapmyindia.com/map_v3/1.3/png?marker=ef4444|15&='
+            };
+            return icons[type] || icons.default;
+        }
+        
+        function visitPlace(placeName) {
+            alert(`🎉 Congratulations! You visited ${placeName}!\n\n+100 XP earned!\n🎁 Special coupon unlocked!`);
+            console.log(`🎯 Player visited: ${placeName}`);
+        }
+        
+        function getUserLocation() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by this browser.');
+                return;
+            }
+            
+            console.log('📍 Getting user location...');
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    console.log(`📍 User location: ${lat}, ${lng}`);
+                    
+                    // Update map center to user's current location
+                    if (map) {
+                        map.setCenter([lng, lat]);
+                        map.setZoom(16);
+                    }
+                    
+                    // Add user marker
+                    addMarkerAt(lng, lat, '📍 Your Current Location', 'This is where you are right now!', 'user');
+                    
+                    // Update status
+                    document.getElementById('status').textContent = 'Centered on your location!';
+                    document.getElementById('status').style.color = '#10b981';
+                },
+                function(error) {
+                    console.error('Geolocation error:', error);
+                    alert('Unable to get your location. Please enable location services.');
+                    
+                    // Update status
+                    document.getElementById('status').textContent = 'Location access denied';
+                    document.getElementById('status').style.color = '#ef4444';
+                }
+            );
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 Xploraa Map Ready!');
+        });
+    </script>
+</body>
+</html>
