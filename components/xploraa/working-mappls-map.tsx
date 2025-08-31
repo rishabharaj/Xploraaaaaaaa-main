@@ -126,20 +126,7 @@ export function GameMap({ userPoints, onLocationVisit, visitedLocations }: GameM
         setMapInstance(map);
         setMapLoading(false);
         setMapError(null);
-      }
-          // Add user marker
-          const userMarker = new window.mappls.Marker({
-            map: map,
-            position: { lat: userLat, lng: userLng },
-            fitbounds: true,
-            icon_url: 'https://apis.mapmyindia.com/map_v3/1.3/png?marker=99ccff|15&=',
-            width: 35,
-            height: 35
-          });
-          
-          console.log('📍 User location added to map');
-        });
-      }
+  }
 
     } catch (error) {
       console.error('❌ Mappls map initialization failed:', error);
