@@ -4,7 +4,7 @@ import { Home, Search, Gift, Users, User, Map, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-type Tab = "home" | "map" | "community" | "leaderboard" | "games" | "profile" | "htmlmap"
+type Tab = "home" | "map" | "community" | "leaderboard" | "games" | "profile" | "htmlmap" | "character"
 
 interface BottomNavProps {
   active: Tab
@@ -16,7 +16,7 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
     { key: "home" as const, icon: Home, label: "Home" },
     { key: "map" as const, icon: Map, label: "Map" },
     { key: "htmlmap" as const, icon: MapPin, label: "HTML" },
-    { key: "community" as const, icon: Users, label: "Community" },
+    { key: "character" as const, icon: User, label: "Character" },
     { key: "games" as const, icon: Gift, label: "Games" },
     { key: "profile" as const, icon: User, label: "Profile" },
   ]

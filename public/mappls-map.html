@@ -15,43 +15,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        .overlay {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-        }
-        
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .subtitle {
-            color: #6b7280;
-            margin-bottom: 15px;
-        }
-        
-        .controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
         .btn {
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             color: white;
@@ -87,30 +50,38 @@
         .marker {
             animation: pulse 2s infinite;
         }
+
+        /* Animated Character Styles */
+        .animated-character {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            transition: transform 0.3s ease;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
     </style>
     <script src="https://apis.mappls.com/advancedmaps/api/b8a5269c-04a7-42cf-8501-3b1371f1ed73/map_sdk?layer=vector&v=3.0&callback=initMap1" defer async></script>
 </head>
 <body>
     <div id="map"></div>
-    
-    <!-- Overlay Info -->
-    <div class="overlay">
-        <div class="title">🗺️ Xploraa Map</div>
-        <div class="subtitle">Explore Indore • Earn XP • Have Fun!</div>
-        <div style="font-size: 14px; color: #374151;">
-            📍 Interactive Mappls Map<br>
-            🎯 Zoom Level: <span id="zoom-level">18</span><br>
-            🔥 Status: <span id="status" style="color: #10b981;">Loading...</span>
-        </div>
-    </div>
-    
-    <!-- Controls -->
-    <div class="controls">
-        <button class="btn" onclick="zoomIn()">🔍 Zoom In</button>
-        <button class="btn" onclick="zoomOut()">🔍 Zoom Out</button>
-        <button class="btn" onclick="addMarkers()">📍 Add Places</button>
-        <button class="btn" onclick="getUserLocation()">📍 My Location</button>
-    </div>
     
     <!-- Stats -->
     <div class="stats">
@@ -131,14 +102,14 @@
             console.log('🚀 Initializing Mappls Map...');
             
             map = new mappls.Map('map', {
-                center: [77.27604556863412, 28.638698386592438],
+                center: [28.638698386592438 , 77.27604556863412 ],
                 geolocation: true,
                 zoomControl: true,
-                zoom: 18
+                zoom: 10
             });
             
             // Set zoom as in your example
-            map.setZoom(18);
+            map.setZoom(20);
             
             // Update status
             document.getElementById('status').textContent = 'Map Loaded!';
@@ -308,9 +279,175 @@
             );
         }
         
+        // ===== ANIMATED CHARACTER FUNCTIONALITY =====
+        var animatedCharacter = null;
+        var isCharacterAnimating = false;
+        var currentCharacterIndex = 0;
+        var characters = ['🚶‍♂️', '🏃‍♂️', '🚴‍♂️', '🧑‍💻', '👨‍🎮', '🦸‍♂️', '🥷', '👨‍🚀'];
+        var characterNames = ['Walker', 'Runner', 'Cyclist', 'Coder', 'Gamer', 'Hero', 'Ninja', 'Astronaut'];
+
+        function createAnimatedCharacter() {
+            if (!map) return;
+            
+            console.log('👤 Creating animated character...');
+            
+            animatedCharacter = new mappls.Marker({
+                map: map,
+                width: 50,
+                height: 50,
+                html: `<div id="xploraa-character" class="animated-character">
+                         ${characters[currentCharacterIndex]}
+                       </div>`,
+                offset: [0, -25],
+                position: {lat: 28.638698386592438, lng: 77.27604556863412},
+                fitbounds: false
+            });
+            
+            animatedCharacter['id'] = "xploraa-character";
+            updateCharacterStatus('Character Ready');
+            console.log('✅ Animated character created!');
+        }
+
+        function startCharacterAnimation() {
+            if (isCharacterAnimating) {
+                console.log('⚠️ Character animation already running');
+                return;
+            }
+            
+            if (!animatedCharacter) {
+                createAnimatedCharacter();
+            }
+            
+            isCharacterAnimating = true;
+            updateCharacterStatus('Exploring...');
+            console.log('🚀 Starting character animation...');
+            
+            // Delhi area exploration route
+            var explorationRoute = [
+                {lat: 28.640000, lng: 77.276000},
+                {lat: 28.642000, lng: 77.278000},
+                {lat: 28.641000, lng: 77.280000},
+                {lat: 28.639000, lng: 77.279000},
+                {lat: 28.637000, lng: 77.277000},
+                {lat: 28.636000, lng: 77.275000},
+                {lat: 28.638000, lng: 77.273000},
+                {lat: 28.640000, lng: 77.274000},
+                {lat: 28.638698386592438, lng: 77.27604556863412}
+            ];
+            
+            explorationRoute.forEach((location, i) => {
+                setTimeout(() => {
+                    if (!isCharacterAnimating) return;
+                    
+                    var speed = 8;
+                    smoothNavigateCharacter(animatedCharacter, location, speed);
+                    
+                    // Change character expression during journey
+                    if (i % 2 === 0) {
+                        updateCharacterExpression('🏃‍♂️');
+                    } else {
+                        updateCharacterExpression('🚶‍♂️');
+                    }
+                }, (3000 * i));
+            });
+            
+            // Reset after animation
+            setTimeout(() => {
+                if (isCharacterAnimating) {
+                    isCharacterAnimating = false;
+                    updateCharacterStatus('Journey Complete!');
+                    updateCharacterExpression(characters[currentCharacterIndex]);
+                }
+            }, (3000 * explorationRoute.length) + 2000);
+        }
+
+        function stopCharacterAnimation() {
+            isCharacterAnimating = false;
+            updateCharacterStatus('Stopped');
+            updateCharacterExpression(characters[currentCharacterIndex]);
+            console.log('⏹️ Character animation stopped');
+        }
+
+        function changeCharacter() {
+            currentCharacterIndex = (currentCharacterIndex + 1) % characters.length;
+            var newCharacter = characters[currentCharacterIndex];
+            var characterName = characterNames[currentCharacterIndex];
+            
+            updateCharacterExpression(newCharacter);
+            document.getElementById('current-character').textContent = newCharacter;
+            updateCharacterStatus(`Changed to ${characterName}`);
+            
+            console.log(`👤 Character changed to: ${characterName} ${newCharacter}`);
+        }
+
+        function updateCharacterExpression(emoji) {
+            var characterElement = document.getElementById('xploraa-character');
+            if (characterElement) {
+                characterElement.innerHTML = emoji;
+            }
+        }
+
+        function updateCharacterStatus(status) {
+            var statusElement = document.getElementById('character-status');
+            if (statusElement) {
+                statusElement.textContent = status;
+            }
+        }
+
+        function smoothNavigateCharacter(obj, setPos, speed) {
+            if (speed != undefined && speed) {
+                var coordinates = [];
+                var currentPos = obj.getPosition();
+                var targetPos = setPos;
+                var distance = getDistanceFromLatLonInKm(currentPos.lat, currentPos.lng, targetPos.lat, targetPos.lng);
+                var heading = angleFromCoordinate(currentPos.lat, currentPos.lng, targetPos.lat, targetPos.lng);
+                var steps = Math.max(Math.round(distance / speed), 1);
+                
+                for (var i = 1; i <= steps; i++) {
+                    coordinates.push({
+                        lat: currentPos.lat + (targetPos.lat - currentPos.lat) * (i / steps),
+                        lng: currentPos.lng + (targetPos.lng - currentPos.lng) * (i / steps)
+                    });
+                }
+                
+                coordinates.forEach((coord, index) => {
+                    setTimeout(() => {
+                        if (!isCharacterAnimating) return;
+                        
+                        obj.setPosition(coord);
+                        
+                        var characterElement = document.getElementById(obj.id);
+                        if (characterElement) {
+                            characterElement.style.transform = `rotate(${heading}deg)`;
+                            
+                            if (index % 2 === 0) {
+                                characterElement.style.transform += ' scale(1.1)';
+                            } else {
+                                characterElement.style.transform += ' scale(1.0)';
+                            }
+                        }
+                    }, 100 * index);
+                });
+            } else {
+                obj.setPosition(setPos);
+            }
+        }
+
+        function angleFromCoordinate(lat1, lon1, lat2, lon2) {
+            var p1 = { x: lat1, y: lon1 };
+            var p2 = { x: lat2, y: lon2 };
+            var angleDeg = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+            return angleDeg;
+        }
+        
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎮 Xploraa Map Ready!');
+            
+            // Auto-create character after 5 seconds
+            setTimeout(() => {
+                createAnimatedCharacter();
+            }, 5000);
         });
     </script>
 </body>

@@ -17,12 +17,13 @@ import SpinWheel from "./spin-wheel"
 import ScratchCard from "./scratch-card"
 import { gameLocations, achievements } from "@/lib/mappls-config"
 
-type Tab = "home" | "map" | "community" | "leaderboard" | "games" | "profile" | "htmlmap"
+type Tab = "home" | "map" | "community" | "leaderboard" | "games" | "profile" | "htmlmap" | "character"
 
 const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
   { key: "home", label: "Home", icon: Home },
   { key: "map", label: "Map", icon: Map },
   { key: "htmlmap", label: "HTML Map", icon: MapPin },
+  { key: "character", label: "Character", icon: User },
   { key: "community", label: "Community", icon: Users },
   { key: "leaderboard", label: "Leaderboard", icon: Trophy },
   { key: "games", label: "Games", icon: Gamepad2 },
@@ -200,6 +201,15 @@ export default function XploraaAppShell() {
                   src="/mappls-map.html" 
                   className="w-full h-full border-none"
                   title="Mappls Interactive Map"
+                />
+              </div>
+            )}
+            {active === "character" && (
+              <div className="h-screen w-full">
+                <iframe 
+                  src="/animated-character.html" 
+                  className="w-full h-full border-none"
+                  title="Animated Character Map"
                 />
               </div>
             )}
