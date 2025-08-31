@@ -51,31 +51,19 @@
             animation: pulse 2s infinite;
         }
 
-        /* Animated Character Styles */
-        .animated-character {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-            transition: transform 0.3s ease;
-            animation: bounce 2s infinite;
-        }
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
+        /* Minimal status badge */
+        .status {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            z-index: 12;
+            background: rgba(255,255,255,0.95);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
         }
     </style>
     <script src="https://apis.mappls.com/advancedmaps/api/b8a5269c-04a7-42cf-8501-3b1371f1ed73/map_sdk?layer=vector&v=3.0&callback=initMap1" defer async></script>
@@ -97,53 +85,44 @@
         var map;
         var markers = [];
         
-        // Your exact initialization function
+        // Initialize map after getting current position to avoid default center
         function initMap1() {
-            console.log('🚀 Initializing Mappls Map...');
-            
-            map = new mappls.Map('map', {
-                center: [28.638698386592438 , 77.27604556863412 ],
-                geolocation: true,
-                zoomControl: true,
-                zoom: 10
-            });
-            
-            // Set zoom as in your example
-            map.setZoom(20);
-            
-            // Update status
-            document.getElementById('status').textContent = 'Map Loaded!';
-            document.getElementById('status').style.color = '#10b981';
-            
-            // Add map event listeners
-            map.on('zoom', function() {
-                document.getElementById('zoom-level').textContent = map.getZoom();
-            });
-            
-            map.on('click', function(e) {
-                console.log('🖱️ Map clicked at:', e.lngLat);
-                addMarkerAt(e.lngLat.lng, e.lngLat.lat, 'Clicked Location', 'You found a secret spot! +50 XP');
-            });
-            
-            // Handle geolocation success
-            map.on('geolocate', function(e) {
-                console.log('📍 Current location found:', e.coords);
-                document.getElementById('status').textContent = 'Location Found!';
-                
-                // Add marker at current location
-                addMarkerAt(e.coords.longitude, e.coords.latitude, '📍 Your Current Location', 'This is where you are right now!', 'user');
-            });
-            
-            console.log('✅ Mappls Map initialized successfully!');
-            
-            // Auto detect user location after 1 second
-            setTimeout(() => {
-                console.log('🔍 Auto-detecting user location...');
-                getUserLocation();
-            }, 1000);
-            
-            // Auto add some sample markers after 3 seconds
-            setTimeout(addMarkers, 3000);
+            console.log('🚀 Initializing Mappls Map and requesting current position...');
+            const statusEl = document.getElementById('status');
+            if (statusEl) statusEl.textContent = 'Requesting location...';
+
+            if (!navigator.geolocation) {
+                if (statusEl) {
+                    statusEl.textContent = 'Geolocation not supported';
+                    statusEl.style.color = '#ef4444';
+                }
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                console.log('📍 Current position:', lat, lng);
+                if (statusEl) {
+                    statusEl.textContent = `Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                    statusEl.style.color = '#10b981';
+                }
+
+                // create the map centered on the real user location
+                map = new mappls.Map('map', {
+                    center: [lng, lat],
+                    zoom: 16,
+                    zoomControl: true,
+                    geolocation: false
+                });
+
+            }, function(error) {
+                console.error('Geolocation error:', error);
+                if (statusEl) {
+                    statusEl.textContent = 'Unable to get location';
+                    statusEl.style.color = '#ef4444';
+                }
+            }, { enableHighAccuracy: true, timeout: 15000 });
         }
         
         // Control functions
@@ -261,10 +240,8 @@
                         map.setZoom(16);
                     }
                     
-                    // Add user marker
-                    addMarkerAt(lng, lat, '📍 Your Current Location', 'This is where you are right now!', 'user');
-                    
-                    // Update status
+                    // Do not add a large animated/person marker on startup per user request.
+                    // Keep map centered on user's real location only.
                     document.getElementById('status').textContent = 'Centered on your location!';
                     document.getElementById('status').style.color = '#10b981';
                 },
@@ -279,166 +256,14 @@
             );
         }
         
-        // ===== ANIMATED CHARACTER FUNCTIONALITY =====
-        var animatedCharacter = null;
-        var isCharacterAnimating = false;
-        var currentCharacterIndex = 0;
-        var characters = ['🚶‍♂️', '🏃‍♂️', '🚴‍♂️', '🧑‍💻', '👨‍🎮', '🦸‍♂️', '🥷', '👨‍🚀'];
-        var characterNames = ['Walker', 'Runner', 'Cyclist', 'Coder', 'Gamer', 'Hero', 'Ninja', 'Astronaut'];
 
-        function createAnimatedCharacter() {
-            if (!map) return;
-            
-            console.log('👤 Creating animated character...');
-            
-            animatedCharacter = new mappls.Marker({
-                map: map,
-                width: 50,
-                height: 50,
-                html: `<div id="xploraa-character" class="animated-character">
-                         ${characters[currentCharacterIndex]}
-                       </div>`,
-                offset: [0, -25],
-                position: {lat: 28.638698386592438, lng: 77.27604556863412},
-                fitbounds: false
-            });
-            
-            animatedCharacter['id'] = "xploraa-character";
-            updateCharacterStatus('Character Ready');
-            console.log('✅ Animated character created!');
-        }
 
-        function startCharacterAnimation() {
-            if (isCharacterAnimating) {
-                console.log('⚠️ Character animation already running');
-                return;
-            }
-            
-            if (!animatedCharacter) {
-                createAnimatedCharacter();
-            }
-            
-            isCharacterAnimating = true;
-            updateCharacterStatus('Exploring...');
-            console.log('🚀 Starting character animation...');
-            
-            // Delhi area exploration route
-            var explorationRoute = [
-                {lat: 28.640000, lng: 77.276000},
-                {lat: 28.642000, lng: 77.278000},
-                {lat: 28.641000, lng: 77.280000},
-                {lat: 28.639000, lng: 77.279000},
-                {lat: 28.637000, lng: 77.277000},
-                {lat: 28.636000, lng: 77.275000},
-                {lat: 28.638000, lng: 77.273000},
-                {lat: 28.640000, lng: 77.274000},
-                {lat: 28.638698386592438, lng: 77.27604556863412}
-            ];
-            
-            explorationRoute.forEach((location, i) => {
-                setTimeout(() => {
-                    if (!isCharacterAnimating) return;
-                    
-                    var speed = 8;
-                    smoothNavigateCharacter(animatedCharacter, location, speed);
-                    
-                    // Change character expression during journey
-                    if (i % 2 === 0) {
-                        updateCharacterExpression('🏃‍♂️');
-                    } else {
-                        updateCharacterExpression('🚶‍♂️');
-                    }
-                }, (3000 * i));
-            });
-            
-            // Reset after animation
-            setTimeout(() => {
-                if (isCharacterAnimating) {
-                    isCharacterAnimating = false;
-                    updateCharacterStatus('Journey Complete!');
-                    updateCharacterExpression(characters[currentCharacterIndex]);
-                }
-            }, (3000 * explorationRoute.length) + 2000);
-        }
 
-        function stopCharacterAnimation() {
-            isCharacterAnimating = false;
-            updateCharacterStatus('Stopped');
-            updateCharacterExpression(characters[currentCharacterIndex]);
-            console.log('⏹️ Character animation stopped');
-        }
 
-        function changeCharacter() {
-            currentCharacterIndex = (currentCharacterIndex + 1) % characters.length;
-            var newCharacter = characters[currentCharacterIndex];
-            var characterName = characterNames[currentCharacterIndex];
-            
-            updateCharacterExpression(newCharacter);
-            document.getElementById('current-character').textContent = newCharacter;
-            updateCharacterStatus(`Changed to ${characterName}`);
-            
-            console.log(`👤 Character changed to: ${characterName} ${newCharacter}`);
-        }
 
-        function updateCharacterExpression(emoji) {
-            var characterElement = document.getElementById('xploraa-character');
-            if (characterElement) {
-                characterElement.innerHTML = emoji;
-            }
-        }
 
-        function updateCharacterStatus(status) {
-            var statusElement = document.getElementById('character-status');
-            if (statusElement) {
-                statusElement.textContent = status;
-            }
-        }
 
-        function smoothNavigateCharacter(obj, setPos, speed) {
-            if (speed != undefined && speed) {
-                var coordinates = [];
-                var currentPos = obj.getPosition();
-                var targetPos = setPos;
-                var distance = getDistanceFromLatLonInKm(currentPos.lat, currentPos.lng, targetPos.lat, targetPos.lng);
-                var heading = angleFromCoordinate(currentPos.lat, currentPos.lng, targetPos.lat, targetPos.lng);
-                var steps = Math.max(Math.round(distance / speed), 1);
-                
-                for (var i = 1; i <= steps; i++) {
-                    coordinates.push({
-                        lat: currentPos.lat + (targetPos.lat - currentPos.lat) * (i / steps),
-                        lng: currentPos.lng + (targetPos.lng - currentPos.lng) * (i / steps)
-                    });
-                }
-                
-                coordinates.forEach((coord, index) => {
-                    setTimeout(() => {
-                        if (!isCharacterAnimating) return;
-                        
-                        obj.setPosition(coord);
-                        
-                        var characterElement = document.getElementById(obj.id);
-                        if (characterElement) {
-                            characterElement.style.transform = `rotate(${heading}deg)`;
-                            
-                            if (index % 2 === 0) {
-                                characterElement.style.transform += ' scale(1.1)';
-                            } else {
-                                characterElement.style.transform += ' scale(1.0)';
-                            }
-                        }
-                    }, 100 * index);
-                });
-            } else {
-                obj.setPosition(setPos);
-            }
-        }
 
-        function angleFromCoordinate(lat1, lon1, lat2, lon2) {
-            var p1 = { x: lat1, y: lon1 };
-            var p2 = { x: lat2, y: lon2 };
-            var angleDeg = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
-            return angleDeg;
-        }
         
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
@@ -446,8 +271,8 @@
             
             // Auto-create character after 5 seconds
             setTimeout(() => {
-                createAnimatedCharacter();
             }, 5000);
+        // Animated character removed to keep map clean and centered on user's real location.
         });
     </script>
 </body>

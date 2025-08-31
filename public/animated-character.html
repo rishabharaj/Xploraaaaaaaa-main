@@ -1,263 +1,46 @@
 <html>
 <head>
-  <title>Animated Character Marker - Xploraa</title>
-  <meta name="viewport" content="initial-scale=1.0">
-  <meta charset="utf-8">
-  <style>
-  html,
-  body,
-  #map {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100vh;
-  }
-
-  /* Custom Character Animation */
-  .animated-character {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    transition: transform 0.3s ease;
-    animation: bounce 2s infinite;
-  }
-
-  .animated-character:hover {
-    transform: scale(1.2);
-  }
-
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-      transform: translateY(0);
+    <title>Mappls Minimal Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+    html,
+    body,
+    #map {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100vh;
     }
-    40% {
-      transform: translateY(-10px);
-    }
-    60% {
-      transform: translateY(-5px);
-    }
-  }
-
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-    }
-  }
-
-  .pulse-animation {
-    animation: pulse 2s infinite;
-  }
-                  
-  </style>
-  <script src="https://apis.mappls.com/advancedmaps/api/b8a5269c-04a7-42cf-8501-3b1371f1ed73/map_sdk?layer=vector&v=3.0&callback=initMap1" defer async></script>
+    </style>
+    <script src="https://apis.mappls.com/advancedmaps/api/b8a5269c-04a7-42cf-8501-3b1371f1ed73/map_sdk?layer=vector&v=3.0&callback=initMap1" defer async></script>
 </head>
 <body>
-  <div id="map"></div>
-  
-  <script>
-    var map;
-    var marker;
-    var isAnimating = false;
-    var currentCharacterIndex = 0;
-    
-    // Custom characters for Xploraa
-    var characters = ['🚶‍♂️', '🏃‍♂️', '🚴‍♂️', '🧑‍💻', '👨‍🎮', '🦸‍♂️', '🥷', '👨‍🚀'];
-    var characterNames = ['Walker', 'Runner', 'Cyclist', 'Coder', 'Gamer', 'Hero', 'Ninja', 'Astronaut'];
-
-    function initMap1() {
-        map = new mappls.Map('map', {
-            center: [77.27604556863412, 28.638698386592438],
-            zoom: 16,
-            geolocation: true,
-            zoomControl: true
-        });
-
-        map.on('load', function() {
-            console.log('🗺️ Map loaded, creating animated character...');
-            
-            // Create custom animated character marker
-            marker = new mappls.Marker({
-                map: map,
-                width: 50,
-                height: 50,
-                html: `<div id="xploraa-character" class="animated-character pulse-animation">
-                         ${characters[currentCharacterIndex]}
-                       </div>`,
-                offset: [0, -25],
-                position: {lat: 28.638698386592438, lng: 77.27604556863412},
-                fitbounds: false
-            });
-            
-            marker['id'] = "xploraa-character";
-            
-            console.log('✅ Animated character created!');
-            updateStatus('Character Ready');
-        });
-    }
-
-    function startAnimation() {
-        if (isAnimating) {
-            console.log('⚠️ Animation already running');
-            return;
-        }
-        
-        isAnimating = true;
-        updateStatus('Exploring...');
-        console.log('🚀 Starting character animation...');
-        
-        // Delhi area exploration route
-        var explorationRoute = [
-            {lat: 28.640000, lng: 77.276000}, // North
-            {lat: 28.642000, lng: 77.278000}, // Northeast  
-            {lat: 28.641000, lng: 77.280000}, // East
-            {lat: 28.639000, lng: 77.279000}, // Southeast
-            {lat: 28.637000, lng: 77.277000}, // South
-            {lat: 28.636000, lng: 77.275000}, // Southwest
-            {lat: 28.638000, lng: 77.273000}, // West
-            {lat: 28.640000, lng: 77.274000}, // Northwest
-            {lat: 28.638698386592438, lng: 77.27604556863412} // Back to start
-        ];
-        
-        explorationRoute.forEach((location, i) => {
-            setTimeout(() => {
-                if (!isAnimating) return; // Check if animation was stopped
-                
-                var speed = 8; // meters per movement
-                smoothNavigate(marker, location, speed);
-                
-                console.log(`📍 Moving to location ${i + 1}: ${location.lat}, ${location.lng}`);
-                
-                // Update character expression during journey
-                if (i % 2 === 0) {
-                    updateCharacterExpression('🏃‍♂️'); // Running
-                } else {
-                    updateCharacterExpression('🚶‍♂️'); // Walking
-                }
-            }, (3000 * i));
-        });
-        
-        // Reset after animation complete
-        setTimeout(() => {
-            if (isAnimating) {
-                isAnimating = false;
-                updateStatus('Journey Complete!');
-                updateCharacterExpression(characters[currentCharacterIndex]);
-                console.log('🎉 Animation journey completed!');
+    <div id="map"></div>
+    <script>
+        var map;
+        function initMap1() {
+            if (!navigator.geolocation) {
+                map = new mappls.Map('map', { zoomControl: true, zoom: 4 });
+                return;
             }
-        }, (3000 * explorationRoute.length) + 2000);
-    }
 
-    function stopAnimation() {
-        isAnimating = false;
-        updateStatus('Stopped');
-        updateCharacterExpression(characters[currentCharacterIndex]);
-        console.log('⏹️ Animation stopped');
-    }
-
-    function changeCharacter() {
-        currentCharacterIndex = (currentCharacterIndex + 1) % characters.length;
-        var newCharacter = characters[currentCharacterIndex];
-        var characterName = characterNames[currentCharacterIndex];
-        
-        updateCharacterExpression(newCharacter);
-        document.getElementById('current-character').textContent = newCharacter;
-        updateStatus(`Changed to ${characterName}`);
-        
-        console.log(`👤 Character changed to: ${characterName} ${newCharacter}`);
-    }
-
-    function updateCharacterExpression(emoji) {
-        var characterElement = document.getElementById('xploraa-character');
-        if (characterElement) {
-            characterElement.innerHTML = emoji;
-        }
-    }
-
-    function updateStatus(status) {
-        document.getElementById('status').textContent = status;
-    }
-
-    /* Smooth Navigation Function */
-    function smoothNavigate(obj, setPos, speed) {
-        if (speed != undefined && speed) {
-            var coordinates = [];
-            var currentPos = obj.getPosition();
-            var targetPos = setPos;
-            var distance = getDistanceFromLatLonInKm(currentPos.lat, currentPos.lng, targetPos.lat, targetPos.lng);
-            var heading = angleFromCoordinate(currentPos.lat, currentPos.lng, targetPos.lat, targetPos.lng);
-            var steps = Math.max(Math.round(distance / speed), 1);
-            
-            // Generate smooth path coordinates
-            for (var i = 1; i <= steps; i++) {
-                coordinates.push({
-                    lat: currentPos.lat + (targetPos.lat - currentPos.lat) * (i / steps),
-                    lng: currentPos.lng + (targetPos.lng - currentPos.lng) * (i / steps)
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                map = new mappls.Map('map', {
+                    center: [lng, lat],
+                    zoom: 16,
+                    zoomControl: true
                 });
-            }
-            
-            // Animate along the path
-            coordinates.forEach((coord, index) => {
-                setTimeout(() => {
-                    if (!isAnimating) return;
-                    
-                    obj.setPosition(coord);
-                    
-                    // Rotate character based on movement direction
-                    var characterElement = document.getElementById(obj.id);
-                    if (characterElement) {
-                        characterElement.style.transform = `rotate(${heading}deg)`;
-                        
-                        // Add walking effect
-                        if (index % 2 === 0) {
-                            characterElement.style.transform += ' scale(1.1)';
-                        } else {
-                            characterElement.style.transform += ' scale(1.0)';
-                        }
-                    }
-                }, 100 * index);
-            });
-        } else {
-            obj.setPosition(setPos);
+            }, function() {
+                // fallback
+                map = new mappls.Map('map', { zoomControl: true, zoom: 4 });
+            }, { enableHighAccuracy: true, timeout: 15000 });
         }
-    }
-
-    /* Calculate angle between two coordinates */
-    function angleFromCoordinate(lat1, lon1, lat2, lon2) {
-        var p1 = { x: lat1, y: lon1 };
-        var p2 = { x: lat2, y: lon2 };
-        var angleDeg = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
-        return angleDeg;
-    }
-
-    /* Calculate distance between two points */
-    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-        var R = 6371; // Radius of Earth in km
-        var dLat = deg2rad(lat2 - lat1);
-        var dLon = deg2rad(lon2 - lon1);
-        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + 
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        var d = R * c; // Distance in km
-        return d * 1000; // Convert to meters
-    }
-
-    function deg2rad(deg) {
-        return deg * (Math.PI / 180);
-    }
-
+    </script>
+</body>
+</html>
     // Auto-start animation after 3 seconds
     setTimeout(() => {
         console.log('🎮 Auto-starting character animation...');

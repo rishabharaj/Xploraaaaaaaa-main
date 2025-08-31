@@ -60,68 +60,73 @@ export function GameMap({ userPoints, onLocationVisit, visitedLocations }: GameM
   // Load places data
   useEffect(() => {
     const places = clientPlacesService.getAllPlaces();
-    setIndorePlaces(places);
-    console.log(`✅ Loaded ${places.length} real Indore places`);
-  }, []);
-
-  // Initialize Mappls Map with proper script loading
-  const initializeMapplsMap = useCallback(() => {
-    console.log('🗺️ Initializing Mappls Map with JavaScript SDK...');
-    
-    if (!mapRef.current) {
-      console.error('❌ Map container not found');
-      return;
-    }
-
     try {
       // Clear any existing content
       mapRef.current.innerHTML = '';
-      
-      // Create the map using Mappls SDK
-      const map = new window.mappls.Map(mapRef.current, {
-        center: [DELHI_CENTER.lng, DELHI_CENTER.lat],
-        zoom: 18,
-        zoomControl: true,
-        location: true,
-        clickableIcons: true,
-        disableDoubleClickZoom: false,
-        backgroundColor: '#f8fafc',
-        traffic: true,
-        geolocation: true,
-        fullscreenControl: true,
-        scrollZoom: true,
-        dragPan: true,
-        dragRotate: true,
-        keyboard: true,
-        doubleClickZoom: true,
-        touchZoomRotate: true
-      });
 
-      // Set zoom level as in your HTML example
-      map.setZoom(18);
-      
-      setMapInstance(map);
-      setMapLoading(false);
-      setMapError(null);
-      
-      console.log('✅ Mappls map initialized successfully!');
-      
-      // Add event listeners
-      map.on('load', () => {
-        console.log('🎯 Map fully loaded, adding markers...');
-        addPlaceMarkers(map);
-      });
-
-      map.on('click', (e: any) => {
-        console.log('🖱️ Map clicked at:', e.lngLat);
-      });
-
-      // Add user location if available
+      // Wait for browser geolocation to create the map centered on user's location
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
           const userLng = position.coords.longitude;
           const userLat = position.coords.latitude;
-          
+
+          // Create the map using Mappls SDK centered on user
+          const map = new window.mappls.Map(mapRef.current, {
+            center: [userLng, userLat],
+            zoom: 16,
+            zoomControl: true,
+            clickableIcons: true,
+            backgroundColor: '#f8fafc',
+            traffic: true,
+            fullscreenControl: true,
+            scrollZoom: true,
+            dragPan: true,
+            keyboard: true
+          });
+
+          setMapInstance(map);
+          setMapLoading(false);
+          setMapError(null);
+
+          console.log('✅ Mappls map initialized at user location');
+
+          // Add event listeners
+          map.on('load', () => addPlaceMarkers(map));
+          map.on('click', (e: any) => console.log('🖱️ Map clicked at:', e.lngLat));
+        }, (err) => {
+          console.warn('⚠️ Geolocation failed, falling back to DELHI_CENTER', err);
+
+          // fallback: create map at DELHI_CENTER if geolocation fails
+          const map = new window.mappls.Map(mapRef.current, {
+            center: [DELHI_CENTER.lng, DELHI_CENTER.lat],
+            zoom: 12,
+            zoomControl: true,
+            clickableIcons: true,
+            backgroundColor: '#f8fafc',
+            traffic: true,
+            fullscreenControl: true,
+            scrollZoom: true,
+            dragPan: true,
+            keyboard: true
+          });
+
+          setMapInstance(map);
+          setMapLoading(false);
+          setMapError(null);
+
+          map.on('load', () => addPlaceMarkers(map));
+        }, { enableHighAccuracy: true, timeout: 15000 });
+      } else {
+        // If geolocation not supported, fallback to DELHI_CENTER
+        const map = new window.mappls.Map(mapRef.current, {
+          center: [DELHI_CENTER.lng, DELHI_CENTER.lat],
+          zoom: 12,
+          zoomControl: true
+        });
+        setMapInstance(map);
+        setMapLoading(false);
+        setMapError(null);
+      }
           // Add user marker
           const userMarker = new window.mappls.Marker({
             map: map,

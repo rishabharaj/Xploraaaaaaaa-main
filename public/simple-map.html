@@ -21,12 +21,26 @@
                 <script>
 var map;
 function initMap1() {
+  if (!navigator.geolocation) {
+    alert('Geolocation not supported by your browser');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
     map = new mappls.Map('map', {
-        center: [77.27604556863412, 28.638698386592438],
-        geolocation: true,
-        zoomControl: true
+      center: [lng, lat],
+      zoom: 16,
+      geolocation: false,
+      zoomControl: true
     });
-    map.setZoom(18);
+    map.setZoom(16);
+  }, function(err) {
+    console.error('Geolocation error', err);
+    // fallback: initialize without center (SDK may pick a default)
+    map = new mappls.Map('map', { zoomControl: true, zoom: 4 });
+  }, { enableHighAccuracy: true, timeout: 15000 });
 }
 </script>
 </body>
